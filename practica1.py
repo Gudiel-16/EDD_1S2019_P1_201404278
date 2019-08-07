@@ -98,7 +98,7 @@ def menu_principal(stdscr):
             stdscr.refresh()
             stdscr.getch()
             if indice_fila_actual==0:
-                curses.wrapper(jugar2)
+                jugar()
             elif indice_fila_actual==2:
                 curses.wrapper(menu_usuarios)
             elif indice_fila_actual==4:
@@ -113,11 +113,10 @@ def menu_principal(stdscr):
 
 def jugar():
     stdscr=curses.initscr()
-    height=20
-    width=40
+    sh, sw=stdscr.getmaxyx()
     pos_Y=0
     pos_X=0
-    window=curses.newwin(height,width,pos_Y,pos_X)
+    window=curses.newwin(sh,sw,pos_Y,pos_X)
     window.keypad(True)
     curses.noecho()
     curses.curs_set(0)
@@ -126,18 +125,28 @@ def jugar():
 
     key=KEY_RIGHT
     pos_X=5
-    pos_Y=5
-    window.addch(pos_Y,pos_X,'*')
+    pos_Y=7
     
+
+    snake=[[pos_Y, 8],[pos_Y, 7],[pos_Y, 6]]#tmanio snake
+
+    for y,x in snake:
+        window.addch(y,x,'*')
+        #stdscr.addstr(y,x,'@')
+
+    window.addch(23,78,'#')
+
     while key!=27:
         window.timeout(100)
         keystroke= window.getch()
-        
+
+        cabeza=snake[0]
+
         if keystroke is not -1:
             key=keystroke
                 
         window.addch(pos_Y,pos_X,' ')
-
+        """
         if pos_X is 1:
             pos_X=39
             window.border(0)
@@ -149,29 +158,56 @@ def jugar():
             pos_Y=19
         elif pos_Y is 19:
             pos_Y=0
-
+        """
         if key==KEY_RIGHT:
             #pos_X=pos_X es como poner pausa
-            pos_X=pos_X+1
+            nuevaCabeza=[cabeza[0], cabeza[1]+1]
         elif key==KEY_LEFT:
-            pos_X=pos_X-1
+            #pos_X=pos_X-1
+            nuevaCabeza=[cabeza[0], cabeza[1]-1]
         elif key==KEY_UP:
-            pos_Y=pos_Y-1
+            #pos_Y=pos_Y-1
+            nuevaCabeza=[cabeza[0]-1, cabeza[1]]
         elif key==KEY_DOWN:
-            pos_Y=pos_Y+1
-        window.addch(pos_Y,pos_X,'*')
+            #pos_Y=pos_Y+1
+            nuevaCabeza=[cabeza[0]+1, cabeza[1]]
+        snake.insert(0,nuevaCabeza)
+        window.addch(nuevaCabeza[0], nuevaCabeza[1],'@')
+        window.addch(snake[-1][0], snake[-1][1], ' ')
+        
+        indiceIzquierdo=[[1,1],[2,1],[3,1],[4,1],[5,1],[6,1],[7,1],[8,1],[9,1],[10,1],[11,1],[12,1],[13,1],[14,1],[15,1],[16,1],[17,1],[18,1],[19,1],[20,1],[21,1],[22,1],[23,1]]
+        indiceDerecho=[[1,78],[2,78],[3,78],[4,78],[5,78],[6,78],[7,78],[8,78],[9,78],[10,78],[11,78],[12,78],[13,78],[14,78],[15,78],[16,78],[17,78],[18,78],[19,78],[20,78],[21,78],[22,78],[23,78]]
+
+        if (snake[0] in indiceIzquierdo[0:]):  
+            nuevaCabeza=[cabeza[0], cabeza[1]+76]
+            snake.insert(0,nuevaCabeza)
+            window.addch(nuevaCabeza[0], nuevaCabeza[1],'@')
+            window.addch(snake[-1][0], snake[-1][1], ' ')
+        elif (snake[0] in indiceDerecho[0:]): 
+            nuevaCabeza=[cabeza[0], cabeza[1]-76]
+            snake.insert(0,nuevaCabeza)
+            window.addch(nuevaCabeza[0], nuevaCabeza[1],'@')
+            window.addch(snake[-1][0], snake[-1][1], ' ')
+        elif (snake[0] in snake[1:]): 
+            break
+
+        snake.pop()
+
+        window.refresh()
+        #window.addch(pos_Y,pos_X,'*')
 
     curses.endwin()
 
-def create_food(snake, box):
-    food=None
+def crear_comida(snake, box):
+    comida=None
 
-    while food is None:
-        food=[random.randint(box[0][0]+1, box[1][0]-1),
+    while comida is None:
+        comida=[random.randint(box[0][0]+1, box[1][0]-1), 
         random.randint(box[0][1]+1, box[1][1]-1)]
-        if food in snake:
-            food=None
-    return food
+        if comida in snake:
+            comida=None
+    return comida
+ 
 
 def print_score(stdscr, score):
     sh,sw=stdscr.getmaxyx()
@@ -190,14 +226,14 @@ def jugar2(stdscr):
     box =[[3,3],[sh-3,sw-3]]
     textpad.rectangle=(stdscr, box[0][0], box[0][1], box[1][0], box[1][1])
     
-    snake=[[sh//2, sw//2+1],[sh//2, sw//2],[sh//2, sw//2-1]]
+    snake=[[sh//2, sw//2+1],[sh//2, sw//2],[sh//2, sw//2-1]]#tmanio snake
     direccion=curses.KEY_RIGHT
 
     for y,x in snake:
         stdscr.addstr(y,x,'@')
 
-    food=create_food(snake, box)
-    stdscr.addstr(food[0], food[1], '*')
+    comida=crear_comida(snake, box)
+    stdscr.addstr(comida[0], comida[1], '*')
 
     score=0
     print_score(stdscr, score)
@@ -209,22 +245,22 @@ def jugar2(stdscr):
         if key in [curses.KEY_RIGHT, curses.KEY_LEFT, curses.KEY_UP, curses.KEY_DOWN]:
             direccion=key
 
-        head=snake[0]
+        cabeza=snake[0]#cabeza posicion
 
         if direccion==curses.KEY_RIGHT:
-            newHead=[head[0], head[1]+1]
+            nuevaCabeza=[cabeza[0], cabeza[1]+1]
         elif direccion == curses.KEY_LEFT:
-            newHead=[head[0], head[1]-1]
+            nuevaCabeza=[cabeza[0], cabeza[1]-1]
         elif direccion == curses.KEY_UP:
-            newHead=[head[0]-1, head[1]]
+            nuevaCabeza=[cabeza[0]-1, cabeza[1]]
         elif direccion == curses.KEY_DOWN:
-            newHead=[head[0]+1, head[1]]
-        snake.insert(0,newHead)
-        stdscr.addstr(newHead[0], newHead[1],'@')
+            nuevaCabeza=[cabeza[0]+1, cabeza[1]]
+        snake.insert(0,nuevaCabeza)
+        stdscr.addstr(nuevaCabeza[0], nuevaCabeza[1],'@')
         
-        if snake[0] ==food:
-            food=create_food(snake, box)
-            stdscr.addstr(food[0], food[1], '*')
+        if snake[0] ==comida:
+            comida=crear_comida(snake, box)
+            stdscr.addstr(comida[0], comida[1], '*')
             score+=1
             print_score(stdscr,score)
         else:
@@ -232,9 +268,16 @@ def jugar2(stdscr):
             snake.pop()
 
 
-        if (snake[0][0] in [box[0][0], box[1][0]] or 
-            snake[0][1] in [box[0][1], box[1][1]] or 
-            snake[0] in snake[1:]):
+        if (snake[0][0] in [box[0][0]+1, box[1][0]-1]):
+            nuevaCabeza=[cabeza[0], cabeza[1]-1]
+            #snake.insert(0,nuevaCabeza)
+            stdscr.addstr(nuevaCabeza[0], nuevaCabeza[1],'@')
+
+        elif(snake[0][1] in [box[0][1], box[1][1]]):
+            comida=crear_comida(snake, box)
+            stdscr.addstr(comida[0], comida[1], 'k') 
+
+        elif (snake[0] in snake[1:]):    
             msg="GAME OVER"
             stdscr.addstr(sh//2, sw//2 - len(msg)//2, msg)
             stdscr.nodelay(0)
@@ -302,8 +345,9 @@ def pintar_menu(stdsrc, index):
     stdsrc.refresh()
     # -----------------------------------------------------------
 
-
-curses.wrapper(menu_principal)
+jugar()
+#curses.wrapper(jugar2)
+#curses.wrapper(menu_principal)
 
 
 
