@@ -8,7 +8,9 @@ import os
 from curses import KEY_RIGHT, KEY_LEFT, KEY_UP, KEY_DOWN, textpad
 
 menu=['Jugar','Puntuaciones','Usuarios','Reportes','Carga Masica',"Salir"]
-nombreDeJugadorQueJugara=""
+nombreUsuarioActual=["vacio"]
+Puntuaciones=[]
+
 """ ----------------------------------------------LISTA DOBLE CIRCULAR PARA USUARIOS ----------------------------------------------"""
 class nodoDobleUsuarios():
 
@@ -42,6 +44,37 @@ class dobleCircularUsuarios():
             self.primero.anterior=self.ultimo
         self.size=self.size+1
     
+    def reporte(self):
+        contador=1  
+        contador2=1      
+        cadena="" 
+        cadena2=""     
+        temp=self.primero
+        for i in range(self.size):#ssssssssssssssss size
+            cadenaNodo='node'+str(contador)+'[label = "{ |'+str(temp.nombre)+' | }  "];\n'
+            cadena+=cadenaNodo
+            contador=contador+1
+            temp=temp.siguiente
+
+        for j in range(self.size):#ddddddddddddddddd size
+            if contador2==1:
+                #cadena2+='node'+str(contador2)+':a -> nullInicio; \n'
+                sig=contador2+1
+                cadena2+='node'+str(contador2)+' -> node'+str(sig)+';\n'
+            elif contador2==self.size:
+                ant=contador2-1
+                cadena2+='node'+str(contador2)+' -> node1[color=red]' + ';\n'
+                cadena2+='node'+str(contador2)+' -> node'+str(ant) +';\n'
+                cadena2+='node1 -> node'+str(contador2)+'[color=red]' + ';\n'
+            else:
+                ant=contador2-1
+                sig=contador2+1
+                cadena2+='node'+str(contador2)+' -> node'+str(sig)+';\n'
+                cadena2+='node'+str(contador2)+' -> node'+str(ant)+';\n'
+            contador2=contador2+1
+        cadena+=cadena2
+        return cadena    
+
     def impresion(self):
         temp=self.primero
         for i in range(self.size):
@@ -127,8 +160,7 @@ class dobleSnake():
                 cadena2+='node'+str(contador2)+' -> node'+str(ant)+';\n'
             contador2=contador2+1
         cadena+=cadena2
-        return cadena
-       
+        return cadena       
     
     def imprimirLista(self):
     
@@ -139,9 +171,55 @@ class dobleSnake():
             for i in range(self.size):
                 print(temp.coordenadas,end=" ")
                 temp=temp.siguiente
+
+""" ---------------------------------------------- PILA PUNTUACIONES ----------------------------------------------"""
+class nodoPilaPunteo():
+    def __init__(self, coordenadas):                  
+        self.siguiente = None        
+        self.coordenadas = coordenadas 
+
+class pilaPunteo():
+    def __init__(self):
+        self.primero=None
+        self.ultimo=None
+        self.size=0
+
+    def estaVacia(self):
+        return self.primero is None
+
+    def insertarInicio(self, coordenadas):
+        nuevo=nodoPilaPunteo(coordenadas)
+        if self.estaVacia():
+            self.primero=nuevo
+        else:
+            nuevo.siguiente=self.primero
+            self.primero=nuevo
+        self.size=self.size+1
+    
+    def reporte(self):
+        temp=self.primero
+        cadena='node0[label = "{' 
+        for i in range(self.size):
+            cadenaNodo='|'+str(temp.coordenadas)
+            cadena+=cadenaNodo
+            temp=temp.siguiente
+        cadena+='}"];'
+        return cadena
+
+    def imprimirLista(self):
+
+        if self.estaVacia():
+            print("lista Vacia")
+        else:            
+            temp=self.primero
+            for i in range(self.size):
+                print(temp.coordenadas,end=" ")
+                temp=temp.siguiente
+            
             
 listaDobleCircularUsuarios=dobleCircularUsuarios() #objeto como variable global
 listaDobleSnake=dobleSnake()  
+listaPilaPunteo=pilaPunteo()
 
 """ ----------------------------------------------PARA EL MENU PRINCIPAL ----------------------------------------------"""
 def print_menu(stdscr, selected_row_idx):
@@ -159,6 +237,8 @@ def print_menu(stdscr, selected_row_idx):
 
 
     stdscr.refresh()
+
+   
 
 def menu_principal(stdscr):
     curses.curs_set(0)
@@ -185,12 +265,53 @@ def menu_principal(stdscr):
             elif indice_fila_actual==2:
                 curses.wrapper(menu_usuarios)
             elif indice_fila_actual==4:
-                cargaMasiva()
+                a=""
+                stdscr.addstr(2,2,"Ingrese nombre de archivo.csv y luego presione ENTER: \n\n ")
+                while True:
+                    tecla = stdscr.getch()                    
+                    if tecla>48 and tecla <58:#numeros
+                        a+=chr(tecla)
+                        stdscr.addstr(2,2,"Ingrese nombre de archivo.csv y luego presione ENTER: ")
+                        stdscr.addstr(4,2,format(a))
+                    elif tecla>64 and tecla<91:#letras mayusculas
+                        a+=chr(tecla)
+                        stdscr.addstr(2,2,"Ingrese nombre de archivo.csv y luego presione ENTER: ")
+                        stdscr.addstr(4,2,format(a))
+                    elif tecla>96 and tecla <123:#letras minusculas
+                        a+=chr(tecla)
+                        stdscr.addstr(2,2,"Ingrese nombre de archivo.csv y luego presione ENTER: ")
+                        stdscr.addstr(4,2,format(a))
+                    elif tecla==46:#punto
+                        a+=chr(tecla)
+                        stdscr.addstr(2,2,"Ingrese nombre de archivo.csv y luego presione ENTER: ")
+                        stdscr.addstr(4,2,format(a))
+                    elif tecla==8:#borrar
+                        temp=len(a)
+                        a=a[:temp-1]
+                        stdscr.addstr(2,2,"Ingrese nombre de archivo.csv y luego presione ENTER: ")
+                        stdscr.addstr(4,2,format(a))
+                    elif tecla==10:#enter   
+                        try:                   
+                            cargaMasiva(str(a))
+                            stdscr.addstr(15,25,"USUARIOS CARGADOS CORRECTAMENTE!")
+                            stdscr.getch()
+                            stdscr.clear()
+                            stdscr.refresh()                            
+                            break
+                        except:
+                            stdscr.addstr(15,22,"EL NOMBRE DEL ARCHIVO NO SE ENCONTRO!")
+                            stdscr.refresh()
+                            stdscr.getch()
+                            stdscr.clear()
+                            stdscr.refresh() 
+                            break                        
             elif indice_fila_actual==len(menu)-1:
                 break
         
         print_menu(stdscr,indice_fila_actual)
         stdscr.refresh()
+
+
 
 
 """ ----------------------------------------------PARA MOSTRAR USUARIOS ----------------------------------------------"""
@@ -207,7 +328,7 @@ def menu_usuarios(stdscr): #INICIA LAS PROPIEDADES BASICAS
         elif (tecla == 27): # SI ES LA TECLA DE SCAPE.... 
             curses.wrapper(menu_principal)
         elif (tecla==curses.KEY_ENTER) or tecla in [10,13]:
-            jugar()
+            nombreUsuarioActual[0]=listaDobleCircularUsuarios.obtenerNombre(index)
         if( index < 0): # EN CASO DE QUE EL INDICE SE VUELVA NEGAVITO LO DEJAMOS EN 0
             index = listaDobleCircularUsuarios.tamanio()-1
         if( index >= listaDobleCircularUsuarios.tamanio()): # EN CASO QUE EL INDICE SE VUELVA MAYOR AL SIZE DEL ARREGLO...
@@ -285,7 +406,7 @@ def jugar():
 
     window.addstr(0,32,"GUDIEL")
 
-    usuariojug= "JUGADOR: " + nombreDeJugadorQueJugara
+    usuariojug= "JUGADOR: " + nombreUsuarioActual[0]
     window.addstr(0,55,usuariojug)
 
     while key!=27:
@@ -311,6 +432,10 @@ def jugar():
         window.addch(nuevaCabeza[0], nuevaCabeza[1],'@')
 
         if snake[0] ==comida:
+            pil=[comida]
+            for y,x in pil:
+                coord="("+str(x) + "," + str(y)+")"
+                listaPilaPunteo.insertarInicio(coord)
             comida=crear_comida(snake)
             window.addch(comida[0], comida[1], '+')
             puntos=puntos+1
@@ -326,11 +451,11 @@ def jugar():
             comidapop=crear_comida(snake)
             window.addch(comidapop[0], comidapop[1], '*')
             aa=[snake.pop()] #captura coordenadas del pop()            
-            for x,y in aa:
-                window.addch(x, y, ' ') #pinta nada en las coordenadas del pop()
+            for y,x in aa:
+                window.addch(y, x, ' ') #pinta nada en las coordenadas del pop()
             bb=[snake.pop()]
-            for x,y in bb:
-                window.addch(x, y, ' ')
+            for y,x in bb:
+                window.addch(y, x, ' ')
             tamanioSnake=tamanioSnake-1
            
             if puntos>0:#solo si el punteo es mayor a 0 resta puntos    
@@ -368,13 +493,14 @@ def jugar():
         elif (snake[0] in snake[1:]): 
             for y,x in snake[0:]:
                 coord="("+str(x) + "," + str(y)+")"
-                print(coord)
                 listaDobleSnake.insertarFinal(coord)
-            graficarSnake()
+            punt=[nombreUsuarioActual[0],puntos]
+            Puntuaciones.append(punt)
             msg="HAS PERDIDO VUELVE A INTENTARLO!"
             stdscr.addstr(sh//2, sw//2 - len(msg)//2, msg)
             stdscr.nodelay(0)
             stdscr.getch()
+            window.refresh()
             break
 
 
@@ -385,9 +511,10 @@ def jugar():
 
 """ ----------------------------------------------CARGA MASIVA ----------------------------------------------"""
 
-def cargaMasiva(): 
-        
-    with open('C:\\Users\\GUDIEL\\Desktop\\cargaMasiva1.csv') as f:
+def cargaMasiva(ruta): 
+    
+    #with open('C:\\Users\\GUDIEL\\Desktop\\cargaMasiva1.csv') as f:
+    with open(ruta) as f:
         ingresarCabecera=0 #para no ingresar cabecera
         reader=csv.reader(f)
         for row in reader:
@@ -417,14 +544,46 @@ def graficarSnake():
     os.system("dot -Tjpg"+ " snake.dot " +"-o snake.jpg")
     os.system("snake.jpg")
 
+def graficarPilaPunteo():
+    # open(nombre_archivo.ext, formato)
+    f = open("snake.dot", "w") 
+    # write("texto a escribir") 
+    
+    f.write("digraph G {\n")
+    f.write("node [shape=record,width=.1,height=.1];")
+    
+    a=listaPilaPunteo.reporte()
+    f.write(a)
+
+    f.write("}")
+    # CIERRA EL ARCHIVO
+    f.close()
+    # dot -Tjpg ruta_archivo_dot.dot -o nombre_archivo_salida.jpg
+    os.system("dot -Tjpg"+ " snake.dot " +"-o snake.jpg")
+    os.system("snake.jpg")
+
+def graficarUsuarios():
+    # open(nombre_archivo.ext, formato)
+    f = open("snake.dot", "w") 
+    # write("texto a escribir") 
+    
+    f.write("digraph G {\n")
+    f.write('rankdir="LR"')
+    f.write("node [shape=record,width=.1,height=.1];")
+    
+    a=listaDobleCircularUsuarios.reporte()
+    f.write(a)
+
+    f.write("}")
+    # CIERRA EL ARCHIVO
+    f.close()
+    # dot -Tjpg ruta_archivo_dot.dot -o nombre_archivo_salida.jpg
+    os.system("dot -Tjpg"+ " snake.dot " +"-o snake.jpg")
+    os.system("snake.jpg")
 
 #graficarSnake()
 #jugar()
 #curses.wrapper(jugar2)
 curses.wrapper(menu_principal)
-
-
-
-
 
 #curses.wrapper(main)
