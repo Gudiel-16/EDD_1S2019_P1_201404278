@@ -102,7 +102,7 @@ class dobleSnake():
     def __init__(self):
         self.primero=None
         self.ultimo=None
-        self.size=1
+        self.size=0
 
     def estaVacia(self):
         return self.primero is None
@@ -130,6 +130,11 @@ class dobleSnake():
             self.ultimo=nuevo
             
         self.size=self.size+1
+
+    def vaciar(self):
+        self.primero=None
+        self.ultimo=None
+        self.size=0
     
     def reporte(self):
         contador=1  
@@ -137,19 +142,19 @@ class dobleSnake():
         cadena='nullInicio[label = "null"];\n' 
         cadena2=""     
         temp=self.primero
-        for i in range(self.size-1):
+        for i in range(self.size):
             cadenaNodo='node'+str(contador)+'[label = "{ <a> |'+str(temp.coordenadas)+' | }  "];\n'
             cadena+=cadenaNodo
             contador=contador+1
             temp=temp.siguiente
         cadena+='nullFinal[label = " null"];\n'
 
-        for j in range(self.size-1):
+        for j in range(self.size):
             if contador2==1:
                 cadena2+='node'+str(contador2)+':a -> nullInicio; \n'
                 sig=contador2+1
                 cadena2+='node'+str(contador2)+' -> node'+str(sig)+';\n'
-            elif contador2==self.size-1:
+            elif contador2==self.size:
                 ant=contador2-1
                 cadena2+='node'+str(contador2)+' -> nullFinal' + ';\n'
                 cadena2+='node'+str(contador2)+' -> node'+str(ant) +';\n'
@@ -172,7 +177,7 @@ class dobleSnake():
                 print(temp.coordenadas,end=" ")
                 temp=temp.siguiente
 
-""" ---------------------------------------------- PILA PUNTUACIONES ----------------------------------------------"""
+""" ---------------------------------------------- PILA PUNTEO ----------------------------------------------"""
 class nodoPilaPunteo():
     def __init__(self, coordenadas):                  
         self.siguiente = None        
@@ -195,6 +200,11 @@ class pilaPunteo():
             nuevo.siguiente=self.primero
             self.primero=nuevo
         self.size=self.size+1
+
+    def vaciar(self):
+        self.primero=None
+        self.primero=None
+        self.size=0
     
     def reporte(self):
         temp=self.primero
@@ -215,11 +225,93 @@ class pilaPunteo():
             for i in range(self.size):
                 print(temp.coordenadas,end=" ")
                 temp=temp.siguiente
+ 
+""" ---------------------------------------------- COLA PUNTUACIONES ----------------------------------------------"""
+class nodoColaPuntuaciones():
+    def __init__(self, coordenadas):                  
+        self.siguiente = None        
+        self.coordenadas = coordenadas 
+
+class colaPuntuaciones():
+    def __init__(self):
+        self.primero=None
+        self.ultimo=None
+        self.size=0
+
+    def estaVacia(self):
+        return self.primero is None
+
+    def insertarFinal(self, coordenadas):
+        nuevo=nodoColaPuntuaciones(coordenadas)
+        if self.estaVacia():
+            self.primero=nuevo
+            self.ultimo=nuevo
+        else:
+            self.ultimo.siguiente=nuevo
+            self.ultimo=nuevo
+        self.size=self.size+1
+
+    def eliminar(self):
+        aux=self.primero.siguiente
+        self.primero.siguiente=None
+        self.primero=aux
+        self.size=self.size-1
+    
+    def vaciar(self):
+        self.primero=None
+        self.ultimo=None
+        self.size=0
+    
+    def reporte(self):
+        contador=1  
+        contador2=1      
+        cadena=""
+        cadena2=""     
+        temp=self.primero
+        for i in range(self.size):
+            cadenaNodo='node'+str(contador)+'[label = "{'+str(temp.coordenadas)+' | } "];\n'
+            cadena+=cadenaNodo
+            contador=contador+1
+            temp=temp.siguiente
+
+        for j in range(self.size):
+            if contador2==1:
+                cadena2+='node'+str(contador2)+' -> null; \n'
+            elif contador2==self.size:
+                ant=contador2-1
+                cadena2+='node'+str(contador2)+' -> node'+str(ant) +';\n'
+            else:
+                ant=contador2-1
+                cadena2+='node'+str(contador2)+' -> node'+str(ant)+';\n'
+            contador2=contador2+1
+        cadena+=cadena2
+        return cadena 
+
+    def imprimirLista(self):
+
+        if self.estaVacia():
+            print("lista Vacia")
+        else:            
+            temp=self.primero
+            for i in range(self.size):
+                print(temp.coordenadas,end=" ")
+                temp=temp.siguiente
             
-            
+""" ---------------------------------------------- MATRIZ PUNTUACIONES ----------------------------------------------"""
+def matrizPuntuaciones(nombre, punteo):
+    if len(Puntuaciones)<10:
+        punt=[nombre,punteo]
+        Puntuaciones.append(punt)
+    elif len(Puntuaciones)==10:
+        del Puntuaciones[0]
+        punt=[nombre,punteo]
+        Puntuaciones.append(punt)
+
+
 listaDobleCircularUsuarios=dobleCircularUsuarios() #objeto como variable global
 listaDobleSnake=dobleSnake()  
 listaPilaPunteo=pilaPunteo()
+listaColaPuntuaciones=colaPuntuaciones()
 
 """ ----------------------------------------------PARA EL MENU PRINCIPAL ----------------------------------------------"""
 def print_menu(stdscr, selected_row_idx):
@@ -261,9 +353,65 @@ def menu_principal(stdscr):
             stdscr.refresh()
             stdscr.getch()'''
             if indice_fila_actual==0:
-                jugar()
+                if str(nombreUsuarioActual[0])=='vacio':
+                    a=""
+                    stdscr.addstr(2,2,"NO HA SELECCIONADO USUARIO, PARA CREAR NUEVO USUARIO INGRESE UN NOMBRE ")
+                    stdscr.addstr(3,2,"Y LUEGO PRESIONE ENTER: \n\n ")
+                    while True:
+                        tecla = stdscr.getch()                    
+                        if tecla>48 and tecla <58:#numeros
+                            a+=chr(tecla)
+                            stdscr.addstr(6,2,format(a))
+                        elif tecla>64 and tecla<91:#letras mayusculas
+                            a+=chr(tecla)
+                            stdscr.addstr(6,2,format(a))
+                        elif tecla>96 and tecla <123:#letras minusculas
+                            a+=chr(tecla)
+                            stdscr.addstr(6,2,format(a))
+                        elif tecla==46:#punto
+                            a+=chr(tecla)
+                            stdscr.addstr(6,2,format(a))
+                        elif tecla==8:#borrar
+                            temp=len(a)
+                            a=a[:temp-1]
+                            stdscr.addstr(6,2,format(a))
+                        elif tecla==10 and len(a)>0:#enter 
+                            nombreUsuarioActual[0]=a
+                            stdscr.addstr(20,25,"USUARIO CREADO CORRECTAMENTE, YA PUEDES JUGAR!")
+                            stdscr.getch()
+                            stdscr.clear()
+                            stdscr.refresh()                            
+                            break
+
+                else:    
+                    jugar()
+            elif indice_fila_actual==1:                               
+                if listaColaPuntuaciones.estaVacia():                    
+                    stdscr.addstr(11,26,"AUN NO HAN JUGADO USUARIOS!")
+                else:
+                    ejey=2
+                    stdscr.addstr(2,20,"USUARIO")
+                    stdscr.addstr(2,50,"PUNTEO")
+                    for nom,punt in Puntuaciones[0:]:
+                        ejey=ejey+2
+                        stdscr.addstr(ejey,20,str(nom))
+                        stdscr.addstr(ejey,52,str(punt))
+                stdscr.getch()  
+                stdscr.clear()
+                stdscr.refresh()              
             elif indice_fila_actual==2:
-                curses.wrapper(menu_usuarios)
+                if listaDobleCircularUsuarios.estaVacia():
+                    stdscr.addstr(11,32,"NO HAY USUARIOS!")
+                    stdscr.getch()  
+                    stdscr.clear()
+                    stdscr.refresh() 
+                else:    
+                    curses.wrapper(menu_usuarios)
+            elif indice_fila_actual==3:
+                graficarSnake()
+                graficarUsuarios()
+                graficarPilaPunteo()
+                graficarColaPuntuaciones()
             elif indice_fila_actual==4:
                 a=""
                 stdscr.addstr(2,2,"Ingrese nombre de archivo.csv y luego presione ENTER: \n\n ")
@@ -326,6 +474,8 @@ def menu_usuarios(stdscr): #INICIA LAS PROPIEDADES BASICAS
         elif (tecla == curses.KEY_LEFT ): # VERIFICAMOS SI ES FLECHA A LA IZQUIERDA
             index = index - 1
         elif (tecla == 27): # SI ES LA TECLA DE SCAPE.... 
+            stdscr.clear()
+            stdscr.refresh()
             curses.wrapper(menu_principal)
         elif (tecla==curses.KEY_ENTER) or tecla in [10,13]:
             nombreUsuarioActual[0]=listaDobleCircularUsuarios.obtenerNombre(index)
@@ -338,9 +488,9 @@ def menu_usuarios(stdscr): #INICIA LAS PROPIEDADES BASICAS
 def pinter_ventana(stdscr):
     # -----------------------------------------------------------
     # PINTAMOS EL MARCO DEL MENU
-    curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_RED) # COLOR DEL MARCO
+    curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_BLUE) # COLOR DEL MARCO
     stdscr.attron(curses.color_pair(1)) # PERMITE HABILITAR UN ATRIBUTO ESPECIFICO
-    stdscr.box("#", "$") ## PINTA EL MARCO
+    stdscr.box("|", "-") ## PINTA EL MARCO
     stdscr.attroff(curses.color_pair(1)) # DESHABILITA EL ATRIBUTO ESPECIICO
     stdscr.refresh()
     # -----------------------------------------------------------
@@ -350,14 +500,13 @@ def pintar_menu(stdsrc, index):
     stdsrc.clear() # LIMPIA LA CONSOLA
     pinter_ventana(stdsrc) # MANDA A PINTAR EL MARCO
     altura, ancho = stdsrc.getmaxyx() # OBTIENE LA ALTURA Y ANCHO DE LA PANTALLA
-    curses.init_pair(2, curses.COLOR_WHITE, curses.COLOR_RED) # COLOR DE LAS OPCIONES, INIICIALIZA UNA PAREJA DE COLORES EL COLOR DE LETRA Y COLOR DE FONDO RESPECTIVAMENTE
+    curses.init_pair(2, curses.COLOR_WHITE, curses.COLOR_BLUE) # COLOR DE LAS OPCIONES, INIICIALIZA UNA PAREJA DE COLORES EL COLOR DE LETRA Y COLOR DE FONDO RESPECTIVAMENTE
     y = int(altura/2) 
     x = int((ancho/2)-(len(listaDobleCircularUsuarios.obtenerNombre(index))/2))
     stdsrc.addstr(y,x, listaDobleCircularUsuarios.obtenerNombre(index), curses.color_pair(2)) # HAGREGA UNA CADENA  LA PANTALLA EN COORDENADAS Y, X Y UN ATRIBUTO EN ESTE CASO ES LA PAREJA DE COLORES
     stdsrc.refresh()
-    # -----------------------------------------------------------
-
-
+    
+ 
 """ ----------------------------------------------PARA LA COMIDA SNAKE ----------------------------------------------"""
 def crear_comida(snake):
     comidaa=None
@@ -393,6 +542,8 @@ def jugar():
 
     comidapop=crear_comida(snake)
     window.addch(comidapop[0], comidapop[1], '*') 
+
+    comidanivel=crear_comida(snake)
     
     indiceIzquierdo=[[1,1],[2,1],[3,1],[4,1],[5,1],[6,1],[7,1],[8,1],[9,1],[10,1],[11,1],[12,1],[13,1],[14,1],[15,1],[16,1],[17,1],[18,1],[19,1],[20,1],[21,1],[22,1],[23,1]]
     indiceDerecho=[[1,78],[2,78],[3,78],[4,78],[5,78],[6,78],[7,78],[8,78],[9,78],[10,78],[11,78],[12,78],[13,78],[14,78],[15,78],[16,78],[17,78],[18,78],[19,78],[20,78],[21,78],[22,78],[23,78]]
@@ -404,13 +555,24 @@ def jugar():
     puntText="PUNTOS: " + str(puntos)
     window.addstr(0,5,puntText)
 
-    window.addstr(0,32,"GUDIEL")
-
     usuariojug= "JUGADOR: " + nombreUsuarioActual[0]
-    window.addstr(0,55,usuariojug)
+    window.addstr(0,32,usuariojug)
+    
+    window.addstr(0,60,"NIVEL: 1")
+
+    #para cada vez que se juegue vacia para generar nueva pila y nueva snake
+    listaPilaPunteo.vaciar()
+    listaDobleSnake.vaciar()
 
     while key!=27:
-        window.timeout(60)
+        '''SEGUNDO NIVEL MAS RAPIDO'''
+        if puntos>=15:      
+            window.timeout(2)            
+            window.addstr(0,60,"NIVEL: 2")
+            window.addch(comidanivel[0], comidanivel[1], 'G')
+        else:
+            window.timeout(100)
+
         keystroke= window.getch()
 
         cabeza=snake[0]
@@ -458,10 +620,17 @@ def jugar():
                 window.addch(y, x, ' ')
             tamanioSnake=tamanioSnake-1
            
-            if puntos>0:#solo si el punteo es mayor a 0 resta puntos    
+            if puntos>0:#solo si el punteo es mayor a 0 resta puntos                  
                 puntos=puntos-1
                 puntText="PUNTOS: " + str(puntos)
-                window.addstr(0,5,puntText)        
+                window.addstr(0,5,puntText)  
+        elif snake[0]==comidanivel:
+            comidanivel=crear_comida(snake)
+            window.addch(comidanivel[0], comidanivel[1], 'G')
+            if puntos>=2:
+                puntos=puntos-2
+                puntText="PUNTOS: " + str(puntos)
+                window.addstr(0,5,puntText)                  
         else:
             window.addch(snake[-1][0], snake[-1][1], ' ')
             snake.pop()
@@ -493,16 +662,18 @@ def jugar():
         elif (snake[0] in snake[1:]): 
             for y,x in snake[0:]:
                 coord="("+str(x) + "," + str(y)+")"
-                listaDobleSnake.insertarFinal(coord)
-            punt=[nombreUsuarioActual[0],puntos]
-            Puntuaciones.append(punt)
+                listaDobleSnake.insertarFinal(coord)            
+            matrizPuntuaciones(str(nombreUsuarioActual[0]),puntos)
+            listaColaPuntuaciones.vaciar() #vaciar para luego volver a llenar (sino se lo mismo)
+            for nom,punt in Puntuaciones[0:]:
+                pil="("+str(nom)+","+str(punt)+")"
+                listaColaPuntuaciones.insertarFinal(pil)
             msg="HAS PERDIDO VUELVE A INTENTARLO!"
             stdscr.addstr(sh//2, sw//2 - len(msg)//2, msg)
-            stdscr.nodelay(0)
             stdscr.getch()
+            stdscr.clear()
             window.refresh()
-            break
-
+            break        
 
         window.refresh()
 
@@ -546,7 +717,7 @@ def graficarSnake():
 
 def graficarPilaPunteo():
     # open(nombre_archivo.ext, formato)
-    f = open("snake.dot", "w") 
+    f = open("pilapunt.dot", "w") 
     # write("texto a escribir") 
     
     f.write("digraph G {\n")
@@ -559,12 +730,12 @@ def graficarPilaPunteo():
     # CIERRA EL ARCHIVO
     f.close()
     # dot -Tjpg ruta_archivo_dot.dot -o nombre_archivo_salida.jpg
-    os.system("dot -Tjpg"+ " snake.dot " +"-o snake.jpg")
-    os.system("snake.jpg")
+    os.system("dot -Tjpg"+ " pilapunt.dot " +"-o pilapunt.jpg")
+    os.system("pilapunt.jpg")
 
 def graficarUsuarios():
     # open(nombre_archivo.ext, formato)
-    f = open("snake.dot", "w") 
+    f = open("usuarios.dot", "w") 
     # write("texto a escribir") 
     
     f.write("digraph G {\n")
@@ -578,8 +749,27 @@ def graficarUsuarios():
     # CIERRA EL ARCHIVO
     f.close()
     # dot -Tjpg ruta_archivo_dot.dot -o nombre_archivo_salida.jpg
-    os.system("dot -Tjpg"+ " snake.dot " +"-o snake.jpg")
-    os.system("snake.jpg")
+    os.system("dot -Tjpg"+ " usuarios.dot " +"-o usuarios.jpg")
+    os.system("usuarios.jpg")
+
+def graficarColaPuntuaciones():
+    # open(nombre_archivo.ext, formato)
+    f = open("colapunt.dot", "w") 
+    # write("texto a escribir") 
+    
+    f.write("digraph G {\n")
+    f.write('rankdir="LR"')
+    f.write("node [shape=record,width=.1,height=.1];")
+    
+    a=listaColaPuntuaciones.reporte()
+    f.write(a)
+
+    f.write("}")
+    # CIERRA EL ARCHIVO
+    f.close()
+    # dot -Tjpg ruta_archivo_dot.dot -o nombre_archivo_salida.jpg
+    os.system("dot -Tjpg"+ " colapunt.dot " +"-o colapunt.jpg")
+    os.system("colapunt.jpg")
 
 #graficarSnake()
 #jugar()
