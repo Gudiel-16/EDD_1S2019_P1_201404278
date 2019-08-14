@@ -527,6 +527,10 @@ def menu_principal_Pausa(stdscr,snake,puntos,puntText,tamanioSnake,comida,comida
                 else:    
                     curses.wrapper(menu_usuarios_pausa)
             elif indice_fila_actual==3:
+                listaDobleSnake.vaciar()
+                for y,x in snake[0:]:
+                    coord="("+str(x) + "," + str(y)+")"
+                    listaDobleSnake.insertarFinal(coord)
                 graficarSnake()
                 graficarUsuarios()
                 graficarPilaPunteo()
@@ -573,9 +577,19 @@ def menu_principal_Pausa(stdscr,snake,puntos,puntText,tamanioSnake,comida,comida
                             stdscr.refresh() 
                             break                        
             elif indice_fila_actual==len(menuPausa)-1:
+                listaDobleSnake.vaciar()
+                for y,x in snake[0:]:
+                    coord="("+str(x) + "," + str(y)+")"
+                    listaDobleSnake.insertarFinal(coord)
+                nomb=str(banderaGuardarPunteoPausa[0])
+                puntt=str(banderaGuardarPunteoPausa[1])
+                punt=[nomb,puntt]
+                Puntuaciones.append(punt)
+                pil="("+str(nomb)+","+str(puntt)+")"
+                listaColaPuntuaciones.insertarFinal(pil)
                 stdscr.clear()
                 stdscr.refresh()
-                curses.wrapper(menu_principal) 
+                curses.wrapper(menu_principal)
         
         print_menu_Pausa(stdscr,indice_fila_actual)
         stdscr.refresh()        
@@ -813,7 +827,7 @@ def jugar():
                 puntos=puntos-1
                 puntText="PUNTOS: " + str(puntos)
                 window.addstr(0,5,puntText)  
-        elif snake[0]==comidanivel:
+        elif snake[0]==comidanivel and puntos>=15:
             comidanivel=crear_comida(snake)
             window.addch(comidanivel[0], comidanivel[1], 'G')
             if puntos>=2:
@@ -978,7 +992,7 @@ def jugarPausa(snake,punt,textlevel,tamansnak,comid,comidpop,comidlevel):
                 puntos=puntos-1
                 puntText="PUNTOS: " + str(puntos)
                 window.addstr(0,5,puntText)  
-        elif snake[0]==comidanivel:
+        elif snake[0]==comidanivel and puntos>=15:
             comidanivel=crear_comida(snake)
             window.addch(comidanivel[0], comidanivel[1], 'G')
             if puntos>=2:
