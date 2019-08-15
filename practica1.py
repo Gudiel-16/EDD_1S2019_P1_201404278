@@ -208,6 +208,16 @@ class pilaPunteo():
             self.primero=nuevo
         self.size=self.size+1
 
+    def eliminarInicio(self):
+        if self.size==1:
+            self.primero=None
+            self.size=self.size-1
+        elif self.size>1:
+            aux=self.primero.siguiente
+            self.primero.siguiente=None
+            self.primero=aux
+            self.size=self.size-1
+
     def vaciar(self):
         self.primero=None
         self.primero=None
@@ -525,7 +535,7 @@ def menu_principal_Pausa(stdscr,snake,puntos,puntText,tamanioSnake,comida,comida
                     stdscr.clear()
                     stdscr.refresh() 
                 else:    
-                    curses.wrapper(menu_usuarios_pausa)
+                    curses.wrapper(menu_usuarios_pausa(stdscr,snake))
             elif indice_fila_actual==3:
                 listaDobleSnake.vaciar()
                 for y,x in snake[0:]:
@@ -641,7 +651,7 @@ def pintar_menu(stdsrc, index):
     
  
 """ -----------------------------------------------------PARA MOSTRAR USUARIOS PAUSA ------------------------------------------------------------"""
-def menu_usuarios_pausa(stdscr): #INICIA LAS PROPIEDADES BASICAS
+def menu_usuarios_pausa(stdscr,snake): #INICIA LAS PROPIEDADES BASICAS
     curses.curs_set(0) # SETEA EL CURSOR EN LA POSICION 0
     index = 0
     pintar_menu_pausa(stdscr, 0) # VA A INICAR EN EL INDICE 0
@@ -656,9 +666,13 @@ def menu_usuarios_pausa(stdscr): #INICIA LAS PROPIEDADES BASICAS
             punte=str(banderaGuardarPunteoPausa[1])
             punt=[nom,punte]
             Puntuaciones.append(punt)
-            pil="("+str(nom)+","+str(punt)+")"
+            pil="("+str(nom)+","+str(punte)+")"
             listaColaPuntuaciones.insertarFinal(pil)
             nombreUsuarioActual[0]=listaDobleCircularUsuarios.obtenerNombre(index)
+            listaDobleSnake.vaciar()
+            for y,x in snake[0:]:
+                coord="("+str(x) + "," + str(y)+")"
+                listaDobleSnake.insertarFinal(coord)
             stdscr.clear()
             stdscr.refresh()
             curses.wrapper(menu_principal)
@@ -667,9 +681,13 @@ def menu_usuarios_pausa(stdscr): #INICIA LAS PROPIEDADES BASICAS
             punte=str(banderaGuardarPunteoPausa[1])
             punt=[nom,punte]
             Puntuaciones.append(punt)
-            pil="("+str(nom)+","+str(punt)+")"
+            pil="("+str(nom)+","+str(punte)+")"
             listaColaPuntuaciones.insertarFinal(pil)
             nombreUsuarioActual[0]=listaDobleCircularUsuarios.obtenerNombre(index)
+            listaDobleSnake.vaciar()
+            for y,x in snake[0:]:
+                coord="("+str(x) + "," + str(y)+")"
+                listaDobleSnake.insertarFinal(coord)
             stdscr.clear()
             stdscr.refresh()
             curses.wrapper(menu_principal)
@@ -808,11 +826,13 @@ def jugar():
             window.addstr(0,5,puntText)
             tamanioSnake=tamanioSnake+1
         elif snake[0] ==comidapop and tamanioSnake<4: #si el tamanio de snake es menor a 3, lo deja igual
+            listaPilaPunteo.eliminarInicio()
             comidapop=crear_comida(snake)
             window.addch(comidapop[0], comidapop[1], '*')
             window.addch(snake[-1][0], snake[-1][1], ' ')
             snake.pop()
         elif snake[0] ==comidapop and tamanioSnake>3: #si el tamanio de snake es mayor a 3, disminuye
+            listaPilaPunteo.eliminarInicio()
             comidapop=crear_comida(snake)
             window.addch(comidapop[0], comidapop[1], '*')
             aa=[snake.pop()] #captura coordenadas del pop()            
@@ -973,11 +993,13 @@ def jugarPausa(snake,punt,textlevel,tamansnak,comid,comidpop,comidlevel):
             window.addstr(0,5,puntText)
             tamanioSnake=tamanioSnake+1
         elif snake[0] ==comidapop and tamanioSnake<4: #si el tamanio de snake es menor a 3, lo deja igual
+            listaPilaPunteo.eliminarInicio()
             comidapop=crear_comida(snake)
             window.addch(comidapop[0], comidapop[1], '*')
             window.addch(snake[-1][0], snake[-1][1], ' ')
             snake.pop()
         elif snake[0] ==comidapop and tamanioSnake>3: #si el tamanio de snake es mayor a 3, disminuye
+            listaPilaPunteo.eliminarInicio()
             comidapop=crear_comida(snake)
             window.addch(comidapop[0], comidapop[1], '*')
             aa=[snake.pop()] #captura coordenadas del pop()            
